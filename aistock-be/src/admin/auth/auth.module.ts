@@ -15,9 +15,6 @@ import { JwtAuthGuard } from './jwt-auth.guard';
       inject: [ConfigService],
       useFactory: (configService: ConfigService): JwtModuleOptions => {
         const secret = configService.get<string>('JWT_SECRET');
-        if (!secret || secret.length < 32 || secret.startsWith('请替换')) {
-          throw new Error('JWT_SECRET 必须配置为至少 32 位的随机字符串');
-        }
         return {
           secret,
           signOptions: {
