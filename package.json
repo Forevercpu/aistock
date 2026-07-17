@@ -11,6 +11,7 @@
     "typecheck": "pnpm -r typecheck",
     "db:generate": "pnpm --filter aistock-be db:generate",
     "db:migrate": "pnpm --filter aistock-be db:migrate",
-    "db:deploy": "pnpm --filter aistock-be db:deploy"
+    "db:deploy": "pnpm --filter aistock-be db:deploy",
+    "db:seed-admin": "pnpm --filter aistock-be db:seed-admin"
   }
 }

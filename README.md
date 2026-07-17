@@ -72,6 +72,26 @@ pnpm db:migrate
 pnpm db:deploy
 ```
 
+### 6. 初始化管理员账号
+
+先在 `aistock-be/.env` 中设置管理员初始密码：
+
+```env
+JWT_SECRET="至少32位的随机字符串"
+JWT_EXPIRES_IN="7d"
+ADMIN_INITIAL_USERNAME="admin"
+ADMIN_INITIAL_PASSWORD="你的管理员密码"
+ADMIN_INITIAL_DISPLAY_NAME="管理员"
+```
+
+然后在仓库根目录执行：
+
+```bash
+pnpm db:seed-admin
+```
+
+该命令会创建用户名为 `admin` 的管理员；如果账号已经存在，则更新密码和显示名称。请勿把真实密码或 JWT 密钥提交到 GitHub。
+
 ## 启动项目
 
 建议打开多个终端，所有终端都停留在仓库根目录。
@@ -126,6 +146,11 @@ NODE_ENV=development
 PORT=3717
 DATABASE_URL="mysql://aistock:aistock@localhost:3306/aistock"
 CORS_ORIGINS="http://localhost:3718,http://localhost:3719"
+JWT_SECRET="请替换为至少32位的随机字符串"
+JWT_EXPIRES_IN="7d"
+ADMIN_INITIAL_USERNAME="admin"
+ADMIN_INITIAL_PASSWORD="请设置管理员初始密码"
+ADMIN_INITIAL_DISPLAY_NAME="管理员"
 ```
 
 当前后端和 Prisma 只读取完整的 `DATABASE_URL`，不读取 `DATABASE_USER`、`DATABASE_PASSWORD`、`DATABASE_HOST` 等拆分变量，因此不需要重复配置。
@@ -157,3 +182,4 @@ DATABASE_URL="mysql://aistock_user:your_password@rm-xxxxxxxx.mysql.rds.aliyuncs.
 | `pnpm db:generate` | 生成 Prisma Client |
 | `pnpm db:migrate` | 本地开发环境创建迁移并更新数据库 |
 | `pnpm db:deploy` | 生产环境执行已经提交的迁移 |
+| `pnpm db:seed-admin` | 创建或重置管理员 `admin` 的密码 |

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -17,9 +17,11 @@ import {
   TagsOutlined,
   TeamOutlined,
 } from '@ant-design/icons';
-import { Avatar, Badge, Button, Card, Col, Flex, Layout, Menu, Progress, Row, Statistic, Table, Tag, Typography } from 'antd';
+import { Avatar, Badge, Button, Card, Col, Flex, Layout, Menu, Progress, Row, Spin, Statistic, Table, Tag, Typography } from 'antd';
 import type { MenuProps, TableProps } from 'antd';
-import { getDashboardOverview } from './api';
+import { getCurrentAdmin, getDashboardOverview } from './api';
+import { LoginPage } from './pages/LoginPage';
+import { useAuthStore } from './store/auth';
 
 const { Header, Sider, Content } = Layout;
 
@@ -58,7 +60,26 @@ const columns: TableProps<(typeof activityData)[number]>['columns'] = [
 export default function App() {
   const [collapsed, setCollapsed] = useState(false);
   const [selectedKey, setSelectedKey] = useState('dashboard');
-  const { data, isError } = useQuery({ queryKey: ['dashboard-overview'], queryFn: getDashboardOverview });
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const user = useAuthStore((state) => state.user);
+  const setUser = useAuthStore((state) => state.setUser);
+  const clearSession = useAuthStore((state) => state.clearSession);
+  const { data: currentAdmin, isLoading: isCheckingAuth } = useQuery({
+    queryKey: ['admin-auth-me'],
+    queryFn: getCurrentAdmin,
+    enabled: Boolean(accessToken),
+    retry: false,
+    staleTime: 5 * 60_000,
+  });
+  const { data, isError } = useQuery({
+    queryKey: ['dashboard-overview'],
+    queryFn: getDashboardOverview,
+    enabled: Boolean(accessToken),
+  });
+
+  useEffect(() => {
+    if (currentAdmin) setUser(currentAdmin);
+  }, [currentAdmin, setUser]);
 
   const stats = useMemo(() => [
     { title: '上市公司', value: data?.companies ?? 0, suffix: '家', accent: '#56d6ff' },
@@ -69,6 +90,12 @@ export default function App() {
 
   const activeLabel = menuItems.find((item) => item.key === selectedKey)?.label ?? '数据总览';
 
+  if (!accessToken) return <LoginPage />;
+
+  if (isCheckingAuth) {
+    return <div className="auth-loading"><Spin size="large" /><span>正在验证登录状态</span></div>;
+  }
+
   return (
     <Layout className="app-shell">
       <Sider width={232} collapsedWidth={76} collapsed={collapsed} className="sidebar">
@@ -78,7 +105,7 @@ export default function App() {
         </div>
         <Menu mode="inline" selectedKeys={[selectedKey]} items={menuItems as MenuProps['items']} onClick={({ key }) => setSelectedKey(key)} className="nav-menu" />
         <div className="sidebar-footer">
-          <Button type="text" icon={<LogoutOutlined />} block>{collapsed ? '' : '退出登录'}</Button>
+          <Button type="text" icon={<LogoutOutlined />} block onClick={clearSession}>{collapsed ? '' : '退出登录'}</Button>
         </div>
       </Sider>
       <Layout className="app-main">
@@ -93,8 +120,8 @@ export default function App() {
             </Flex>
             <Flex align="center" gap={18} className="topbar-actions">
               <Badge dot><BellOutlined className="header-icon" /></Badge>
-              <Avatar style={{ background: 'linear-gradient(135deg,#56d6ff,#6c5ce7)' }}>管</Avatar>
-              <div className="admin-name"><strong>管理员</strong><span>超级管理员</span></div>
+              <Avatar style={{ background: 'linear-gradient(135deg,#56d6ff,#6c5ce7)' }}>{user?.displayName.slice(0, 1) ?? '管'}</Avatar>
+              <div className="admin-name"><strong>{user?.displayName ?? '管理员'}</strong><span>{user?.role === 'admin' ? '超级管理员' : user?.role}</span></div>
             </Flex>
           </Flex>
         </Header>
