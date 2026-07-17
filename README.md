@@ -82,7 +82,7 @@ pnpm db:deploy
 pnpm dev:admin
 ```
 
-访问地址：`http://localhost:5173`
+访问地址：`http://localhost:3719`
 
 ### 启动用户端
 
@@ -90,7 +90,7 @@ pnpm dev:admin
 pnpm dev:user
 ```
 
-访问地址：`http://localhost:5174`
+访问地址：`http://localhost:3718`
 
 ### 启动后端
 
@@ -98,8 +98,8 @@ pnpm dev:user
 pnpm dev:be
 ```
 
-后端接口：`http://localhost:3000/api`  
-Swagger：`http://localhost:3000/docs`
+后端接口：`http://localhost:3717/api`  
+Swagger：`http://localhost:3717/docs`
 
 根目录命令本质上通过 pnpm 的 `--filter` 找到对应子项目。例如：
 
@@ -123,9 +123,9 @@ pnpm dev
 
 ```env
 NODE_ENV=development
-PORT=3000
+PORT=3717
 DATABASE_URL="mysql://aistock:aistock@localhost:3306/aistock"
-CORS_ORIGINS="http://localhost:5173,http://localhost:5174"
+CORS_ORIGINS="http://localhost:3718,http://localhost:3719"
 ```
 
 当前后端和 Prisma 只读取完整的 `DATABASE_URL`，不读取 `DATABASE_USER`、`DATABASE_PASSWORD`、`DATABASE_HOST` 等拆分变量，因此不需要重复配置。
