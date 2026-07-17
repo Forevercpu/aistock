@@ -10,7 +10,7 @@
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
     "db:generate": "pnpm --filter aistock-be db:generate",
-    "db:migrate": "pnpm --filter aistock-be db:migrate"
+    "db:migrate": "pnpm --filter aistock-be db:migrate",
+    "db:deploy": "pnpm --filter aistock-be db:deploy"
   }
 }
-
