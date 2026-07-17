@@ -1,0 +1,24 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: aistock-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: aistock
+      MYSQL_USER: aistock
+      MYSQL_PASSWORD: aistock
+      TZ: Asia/Shanghai
+    ports:
+      - "3306:3306"
+    volumes:
+      - aistock_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  aistock_mysql_data:
+
