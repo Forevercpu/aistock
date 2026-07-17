@@ -17,7 +17,7 @@ import {
   TagsOutlined,
   TeamOutlined,
 } from '@ant-design/icons';
-import { Avatar, Badge, Button, Card, Col, Flex, Layout, Menu, Progress, Row, Space, Statistic, Table, Tag, Typography } from 'antd';
+import { Avatar, Badge, Button, Card, Col, Flex, Layout, Menu, Progress, Row, Statistic, Table, Tag, Typography } from 'antd';
 import type { MenuProps, TableProps } from 'antd';
 import { getDashboardOverview } from './api';
 
@@ -81,18 +81,21 @@ export default function App() {
           <Button type="text" icon={<LogoutOutlined />} block>{collapsed ? '' : '退出登录'}</Button>
         </div>
       </Sider>
-      <Layout>
+      <Layout className="app-main">
         <Header className="topbar">
-          <Flex align="center" justify="space-between">
-            <Space size={14}>
+          <Flex align="center" justify="space-between" className="topbar-inner">
+            <Flex align="center" gap={14} className="topbar-heading">
               <Button type="text" icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />} onClick={() => setCollapsed(!collapsed)} />
-              <div><Typography.Title level={4}>{activeLabel}</Typography.Title><Typography.Text type="secondary">构建可持续维护的上市公司知识库</Typography.Text></div>
-            </Space>
-            <Space size={18}>
+              <div className="page-heading">
+                <Typography.Title level={4}>{activeLabel}</Typography.Title>
+                <Typography.Text type="secondary">构建可持续维护的上市公司知识库</Typography.Text>
+              </div>
+            </Flex>
+            <Flex align="center" gap={18} className="topbar-actions">
               <Badge dot><BellOutlined className="header-icon" /></Badge>
               <Avatar style={{ background: 'linear-gradient(135deg,#56d6ff,#6c5ce7)' }}>管</Avatar>
               <div className="admin-name"><strong>管理员</strong><span>超级管理员</span></div>
-            </Space>
+            </Flex>
           </Flex>
         </Header>
         <Content className="content">
