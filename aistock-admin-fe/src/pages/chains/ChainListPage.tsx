@@ -6,13 +6,16 @@ import { useNavigate } from 'react-router-dom';
 import { deleteChain, getChains, saveChain } from '../../services/admin';
 import type { ChainListItem } from '../../types/admin';
 
+/** 产业链基础信息列表，负责新增、编辑、删除和进入图谱编辑器。 */
 export function ChainListPage() {
   const navigate = useNavigate(); const queryClient = useQueryClient(); const [messageApi, holder] = message.useMessage();
   const [form] = Form.useForm(); const [open, setOpen] = useState(false); const [editing, setEditing] = useState<ChainListItem | null>(null);
   const { data = [], isLoading } = useQuery({ queryKey: ['chains'], queryFn: getChains });
+  /** 刷新产业链列表缓存。 */
   const refresh = () => void queryClient.invalidateQueries({ queryKey: ['chains'] });
   const saveMutation = useMutation({ mutationFn: (values: { name: string; description?: string; status: string }) => saveChain(editing?.id ?? null, values), onSuccess: () => { messageApi.success('产业链已保存'); setOpen(false); refresh(); }, onError: () => messageApi.error('保存失败，名称可能已存在') });
   const deleteMutation = useMutation({ mutationFn: deleteChain, onSuccess: () => { messageApi.success('产业链已删除'); refresh(); }, onError: () => messageApi.error('删除失败，请检查关联题目') });
+  /** 打开新增或编辑弹窗并设置初始表单值。 */
   const edit = (item?: ChainListItem) => { setEditing(item ?? null); form.setFieldsValue(item ? { name: item.name, description: item.description, status: item.status } : { status: 'DRAFT' }); setOpen(true); };
   const statusLabels = { DRAFT: '草稿', PUBLISHED: '已发布', ARCHIVED: '已归档' };
   return <>{holder}<Card className="module-card" title="产业链图谱" extra={<Button type="primary" icon={<PlusOutlined />} onClick={() => edit()}>新建产业链</Button>}><Table rowKey="id" loading={isLoading} dataSource={data} columns={[

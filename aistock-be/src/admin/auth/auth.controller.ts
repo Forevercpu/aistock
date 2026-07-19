@@ -27,6 +27,7 @@ export class AdminAuthController {
   @Patch('profile')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @ApiOperation({ summary: '修改当前管理员资料' })
   updateProfile(@Req() request: AdminRequest, @Body() dto: UpdateProfileDto) {
     return this.authService.updateProfile(request.admin.sub, dto);
   }
@@ -34,6 +35,7 @@ export class AdminAuthController {
   @Post('change-password')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @ApiOperation({ summary: '修改当前管理员密码' })
   changePassword(@Req() request: AdminRequest, @Body() dto: ChangePasswordDto) {
     return this.authService.changePassword(request.admin.sub, dto);
   }

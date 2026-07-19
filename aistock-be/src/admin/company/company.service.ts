@@ -13,6 +13,7 @@ import { AuditService } from '../audit/audit.service';
 export class AdminCompanyService {
   constructor(private readonly prisma: PrismaService, private readonly audit: AuditService) {}
 
+  /** 按关键字、交易所和状态分页查询上市公司。 */
   async findAll(query: QueryCompaniesDto) {
     const keyword = query.keyword?.trim();
     const where = {
@@ -58,6 +59,7 @@ export class AdminCompanyService {
     };
   }
 
+  /** 查询公司详情以及产品、板块、标签等关联数据。 */
   async findOne(id: number) {
     const company = await this.prisma.company.findUnique({
       where: { id },
@@ -77,6 +79,7 @@ export class AdminCompanyService {
     };
   }
 
+  /** 创建上市公司并记录新增操作。 */
   async create(dto: CreateCompanyDto, adminId: number) {
     try {
       const item = await this.prisma.company.create({ data: this.toCreateData(dto) });
@@ -87,6 +90,7 @@ export class AdminCompanyService {
     }
   }
 
+  /** 按传入字段更新公司资料，未传字段保持不变。 */
   async update(id: number, dto: UpdateCompanyDto, adminId: number) {
     await this.ensureCompany(id);
     try {
@@ -98,6 +102,7 @@ export class AdminCompanyService {
     }
   }
 
+  /** 单独修改公司发布状态，供列表快捷操作使用。 */
   async updateStatus(id: number, dto: UpdateCompanyStatusDto, adminId: number) {
     await this.ensureCompany(id);
     const item = await this.prisma.company.update({ where: { id }, data: { status: dto.status } });
@@ -105,6 +110,7 @@ export class AdminCompanyService {
     return item;
   }
 
+  /** 为指定公司新增主营产品。 */
   async createProduct(companyId: number, dto: CreateProductDto, adminId: number) {
     await this.ensureCompany(companyId);
     const item = await this.prisma.product.create({ data: { ...dto, companyId } });
@@ -112,6 +118,7 @@ export class AdminCompanyService {
     return item;
   }
 
+  /** 编辑属于指定公司的主营产品。 */
   async updateProduct(companyId: number, productId: number, dto: UpdateProductDto, adminId: number) {
     await this.ensureProduct(companyId, productId);
     const item = await this.prisma.product.update({ where: { id: productId }, data: dto });
@@ -119,6 +126,7 @@ export class AdminCompanyService {
     return item;
   }
 
+  /** 删除属于指定公司的主营产品。 */
   async deleteProduct(companyId: number, productId: number, adminId: number) {
     await this.ensureProduct(companyId, productId);
     const item = await this.prisma.product.delete({ where: { id: productId } });
@@ -126,6 +134,7 @@ export class AdminCompanyService {
     return { success: true };
   }
 
+  /** 把创建 DTO 规范化为 Prisma 公司写入结构。 */
   private toCreateData(dto: CreateCompanyDto): Prisma.CompanyCreateInput {
     return {
       stockCode: dto.stockCode.trim(),
@@ -140,6 +149,7 @@ export class AdminCompanyService {
     };
   }
 
+  /** 仅提取更新 DTO 中实际传入的字段。 */
   private toUpdateData(dto: UpdateCompanyDto): Prisma.CompanyUpdateInput {
     return {
       ...(dto.stockCode !== undefined ? { stockCode: dto.stockCode.trim() } : {}),
@@ -154,16 +164,19 @@ export class AdminCompanyService {
     };
   }
 
+  /** 校验公司存在，避免后续写操作返回不清晰的数据库错误。 */
   private async ensureCompany(id: number) {
     const company = await this.prisma.company.findUnique({ where: { id }, select: { id: true } });
     if (!company) throw new NotFoundException('公司不存在');
   }
 
+  /** 同时校验产品存在且确实属于目标公司。 */
   private async ensureProduct(companyId: number, productId: number) {
     const product = await this.prisma.product.findFirst({ where: { id: productId, companyId }, select: { id: true } });
     if (!product) throw new NotFoundException('主营产品不存在');
   }
 
+  /** 将股票代码唯一键冲突转换成业务异常。 */
   private handleUniqueError(error: unknown): never {
     if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
       throw new ConflictException('股票代码已存在');

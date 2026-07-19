@@ -7,16 +7,19 @@ import { SaveChainDto, SaveChainGraphDto } from './dto/chain.dto';
 export class AdminChainService {
   constructor(private readonly prisma: PrismaService, private readonly audit: AuditService) {}
 
+  /** 查询产业链列表，并附带节点和连线数量。 */
   async findAll() {
     return this.prisma.industryChain.findMany({ include: { _count: { select: { nodes: true, edges: true } } }, orderBy: { updatedAt: 'desc' } });
   }
 
+  /** 查询产业链图谱详情，将节点公司关系整理成前端所需结构。 */
   async findOne(id: number) {
     const item = await this.prisma.industryChain.findUnique({ where: { id }, include: { nodes: { include: { companies: { include: { company: { select: { id: true, stockCode: true, shortName: true, name: true } } } } }, orderBy: { id: 'asc' } }, edges: { orderBy: { id: 'asc' } } } });
     if (!item) throw new NotFoundException('产业链不存在');
     return { ...item, nodes: item.nodes.map(({ companies, ...node }) => ({ ...node, companies: companies.map((relation) => relation.company), companyIds: companies.map((relation) => relation.companyId) })) };
   }
 
+  /** 新增产业链基础信息。 */
   async create(dto: SaveChainDto, adminId: number) {
     try {
       const item = await this.prisma.industryChain.create({ data: { name: dto.name.trim(), description: dto.description?.trim() || null, status: dto.status } });
@@ -25,6 +28,7 @@ export class AdminChainService {
     } catch (error) { this.handleUnique(error); }
   }
 
+  /** 更新产业链名称、说明和发布状态。 */
   async update(id: number, dto: SaveChainDto, adminId: number) {
     await this.ensure(id);
     try {
@@ -34,6 +38,7 @@ export class AdminChainService {
     } catch (error) { this.handleUnique(error); }
   }
 
+  /** 删除未被题库引用的产业链。 */
   async remove(id: number, adminId: number) {
     const item = await this.prisma.industryChain.findUnique({ where: { id }, include: { _count: { select: { quizQuestions: true } } } });
     if (!item) throw new NotFoundException('产业链不存在');
@@ -43,6 +48,7 @@ export class AdminChainService {
     return { success: true };
   }
 
+  /** 整体保存图谱：重建节点、公司关系和连线，保证数据一致。 */
   async saveGraph(id: number, dto: SaveChainGraphDto, adminId: number) {
     const chain = await this.ensure(id);
     await this.prisma.$transaction(async (tx) => {
@@ -62,6 +68,8 @@ export class AdminChainService {
     return this.findOne(id);
   }
 
+  /** 查询并确认产业链存在。 */
   private async ensure(id: number) { const item = await this.prisma.industryChain.findUnique({ where: { id } }); if (!item) throw new NotFoundException('产业链不存在'); return item; }
+  /** 将产业链名称唯一键错误转换为业务异常。 */
   private handleUnique(error: unknown): never { if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') throw new ConflictException('产业链名称已存在'); throw error; }
 }

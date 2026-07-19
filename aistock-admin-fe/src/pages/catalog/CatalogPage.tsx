@@ -10,8 +10,10 @@ type CatalogItem = SectorItem | TagItem;
 interface CatalogPageProps { kind: 'sector' | 'tag' }
 
 const sectorTypes: Record<string, string> = { industry: '行业', concept: '概念', region: '地域', index: '指数成分' };
+/** 从 Axios 或参数校验错误中提取第一条可读提示。 */
 const getError = (error: unknown) => axios.isAxiosError(error) ? (Array.isArray(error.response?.data?.message) ? error.response?.data?.message[0] : error.response?.data?.message || '操作失败') : '操作失败';
 
+/** 复用同一套界面管理板块/概念或标签。 */
 export function CatalogPage({ kind }: CatalogPageProps) {
   const isSector = kind === 'sector';
   const queryClient = useQueryClient();
@@ -24,11 +26,14 @@ export function CatalogPage({ kind }: CatalogPageProps) {
   const queryKey = isSector ? 'sectors' : 'tags';
   const { data = [], isLoading } = useQuery<CatalogItem[]>({ queryKey: [queryKey], queryFn: async () => isSector ? await getSectors() : await getTags() });
   const { data: companyOptions = [] } = useQuery({ queryKey: ['company-options'], queryFn: getCompanyOptions });
+  /** 使当前分类列表缓存失效并自动重新请求。 */
   const refresh = () => void queryClient.invalidateQueries({ queryKey: [queryKey] });
   const saveMutation = useMutation({ mutationFn: (values: Record<string, unknown>) => isSector ? saveSector(editing?.id ?? null, values as { name: string; type: string; parentId?: number | null }) : saveTag(editing?.id ?? null, values as { name: string; color?: string | null }), onSuccess: () => { messageApi.success('保存成功'); setDrawerOpen(false); refresh(); }, onError: (error) => messageApi.error(getError(error)) });
   const deleteMutation = useMutation({ mutationFn: (id: number) => isSector ? deleteSector(id) : deleteTag(id), onSuccess: () => { messageApi.success('删除成功'); refresh(); }, onError: (error) => messageApi.error(getError(error)) });
   const relationMutation = useMutation({ mutationFn: async () => { if (!relationItem) return; if (isSector) await setSectorCompanies(relationItem.id, companyIds); else await setTagCompanies(relationItem.id, companyIds); }, onSuccess: () => { messageApi.success('关联公司已更新'); setRelationItem(null); refresh(); }, onError: (error) => messageApi.error(getError(error)) });
+  /** 打开新增或编辑抽屉，并按当前分类类型回填表单。 */
   const openEditor = (item?: CatalogItem) => { setEditing(item ?? null); form.setFieldsValue(item ? { name: item.name, ...('type' in item ? { type: item.type, parentId: item.parentId } : { color: item.color }) } : isSector ? { type: 'industry' } : { color: '#56d6ff' }); setDrawerOpen(true); };
+  /** 打开公司关联弹窗并回填已选公司编号。 */
   const openRelations = (item: CatalogItem) => { setRelationItem(item); setCompanyIds(item.companies.map((company) => company.id)); };
 
   const columns = [

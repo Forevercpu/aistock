@@ -11,6 +11,7 @@ export interface AdminRequest {
 export class JwtAuthGuard implements CanActivate {
   constructor(private readonly jwtService: JwtService) {}
 
+  /** 从 Authorization Bearer 头解析并校验 JWT，再把载荷挂到当前请求。 */
   async canActivate(context: ExecutionContext) {
     const request = context.switchToHttp().getRequest<AdminRequest>();
     const [type, token] = request.headers.authorization?.split(' ') ?? [];

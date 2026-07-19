@@ -8,12 +8,14 @@ import App from './App';
 import './styles.css';
 import '@xyflow/react/dist/style.css';
 
+/** 全局请求缓存配置：普通查询 30 秒内复用，网络错误自动重试一次。 */
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: { staleTime: 30_000, retry: 1 },
   },
 });
 
+// 应用入口统一装配主题、请求缓存与前端路由。
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ConfigProvider

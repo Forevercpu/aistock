@@ -9,11 +9,13 @@ interface LoginFormValues {
   password: string;
 }
 
+/** 管理员账号密码登录页，登录成功后保存单 JWT 会话。 */
 export function LoginPage() {
   const [form] = Form.useForm<LoginFormValues>();
   const [messageApi, contextHolder] = message.useMessage();
   const setSession = useAuthStore((state) => state.setSession);
 
+  /** 提交登录表单，并把后端返回的 Token 与账号资料写入状态仓库。 */
   const handleSubmit = async (values: LoginFormValues) => {
     try {
       const result = await loginAdmin(values.username.trim(), values.password);

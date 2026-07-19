@@ -5,6 +5,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 export class AdminDashboardService {
   constructor(private readonly prisma: PrismaService) {}
 
+  /** 汇总后台首页指标、完成度、排行、审计动态和近 30 天趋势。 */
   async getOverview() {
     if (!process.env.DATABASE_URL) {
       return this.emptyOverview();
@@ -32,6 +33,7 @@ export class AdminDashboardService {
         this.prisma.company.count({ where: { OR: [{ sectors: { some: {} } }, { tags: { some: {} } }] } }),
         this.prisma.announcement.count({ where: { reviewStatus: { not: 'PENDING' } } }),
       ]);
+      // 先补齐 30 天日期，确保没有操作记录的日期也会返回 0。
       const trendMap = new Map<string, number>();
       for (let offset = 0; offset < 30; offset += 1) { const date = new Date(since); date.setDate(since.getDate() + offset); trendMap.set(date.toISOString().slice(0, 10), 0); }
       trendLogs.forEach((item) => { const key = item.createdAt.toISOString().slice(0, 10); trendMap.set(key, (trendMap.get(key) ?? 0) + 1); });
@@ -53,6 +55,7 @@ export class AdminDashboardService {
     }
   }
 
+  /** 数据库不可用时返回稳定的空结构，避免仪表盘渲染失败。 */
   private emptyOverview() {
     return { companies: 0, sectors: 0, announcements: 0, pendingReviews: 0, chains: 0, quizzes: 0, databaseConnected: false, companyStatuses: [], reviewStatuses: [], sectorRanking: [], completeness: { products: 0, relations: 0, aiReviews: 0 }, recentLogs: [], activityTrend: [] };
   }

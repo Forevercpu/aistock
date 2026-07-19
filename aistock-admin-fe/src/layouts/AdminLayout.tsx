@@ -29,6 +29,7 @@ interface AppMenuItem {
   subtitle: string;
 }
 
+/** 侧边栏菜单也是顶部标题和副标题的唯一配置来源。 */
 const menuItems: AppMenuItem[] = [
   { key: '/dashboard', icon: <AppstoreOutlined />, label: '数据总览', subtitle: '构建可持续维护的上市公司知识库' },
   { key: '/companies', icon: <BankOutlined />, label: '上市公司', subtitle: '维护公司资料、上市信息和主营产品' },
@@ -47,6 +48,7 @@ export function AdminLayout() {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const clearSession = useAuthStore((state) => state.clearSession);
+  // 详情页继续高亮所属一级菜单，例如 /companies/1 高亮“上市公司”。
   const selectedKey = menuItems.find((item) => location.pathname.startsWith(item.key))?.key ?? '/dashboard';
   const activeItem = menuItems.find((item) => item.key === selectedKey) ?? menuItems[0];
 

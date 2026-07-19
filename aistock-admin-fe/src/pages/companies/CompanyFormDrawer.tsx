@@ -12,12 +12,14 @@ interface CompanyFormDrawerProps {
   onSaved: () => void;
 }
 
+/** 统一提取后端校验错误，供抽屉顶部消息提示使用。 */
 function getErrorMessage(error: unknown) {
   if (!axios.isAxiosError(error)) return '保存失败，请稍后重试';
   const value = error.response?.data?.message;
   return Array.isArray(value) ? value[0] : value ?? '保存失败，请稍后重试';
 }
 
+/** 同时支持新增和编辑公司的复用表单抽屉。 */
 export function CompanyFormDrawer({ open, company, onClose, onSaved }: CompanyFormDrawerProps) {
   const [form] = Form.useForm<CompanyInput>();
   const [messageApi, contextHolder] = message.useMessage();
@@ -46,6 +48,7 @@ export function CompanyFormDrawer({ open, company, onClose, onSaved }: CompanyFo
     } : { status: 'DRAFT', exchange: 'SSE' });
   }, [company, form, open]);
 
+  /** 规范化日期和可空文本后提交保存请求。 */
   const submit = (values: CompanyInput) => mutation.mutate({
     ...values,
     stockCode: values.stockCode.trim(),

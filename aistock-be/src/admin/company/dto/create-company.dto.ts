@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsDateString, IsIn, IsOptional, IsString, IsUrl, MaxLength } from 'class-validator';
 
+/** 创建上市公司所需的基础资料。 */
 export class CreateCompanyDto {
   @ApiProperty({ example: '600000' })
   @IsString()

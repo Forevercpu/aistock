@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNumber, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
 
+/** 创建公司主营产品时提交的资料。 */
 export class CreateProductDto {
   @ApiProperty({ example: '核心产品' })
   @IsString()

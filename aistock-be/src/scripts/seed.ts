@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { PrismaMariaDb } from '@prisma/adapter-mariadb';
 import { PrismaClient } from '../generated/prisma/client';
 
+// 以下常量是可重复导入的演示知识库数据源。
 const companies = [
   { stockCode: '300750', name: '宁德时代新能源科技股份有限公司', shortName: '宁德时代', exchange: 'SZSE', sector: '电池', tags: ['动力电池', '储能', '新能源'], products: [['动力电池系统', 70.2], ['储能系统', 18.4], ['电池材料及回收', 11.4]], description: '新能源动力电池及储能系统示例数据。' },
   { stockCode: '002594', name: '比亚迪股份有限公司', shortName: '比亚迪', exchange: 'SZSE', sector: '汽车整车', tags: ['新能源汽车', '动力电池', '智能驾驶'], products: [['新能源汽车', 72.8], ['手机部件及组装', 18.1], ['二次充电电池', 9.1]], description: '新能源汽车、电子和电池业务示例数据。' },
@@ -43,12 +44,14 @@ const chainSeeds = [
   ], edges: [[0, 1, '原料供应'], [1, 2, '电池加工'], [2, 3, '组件安装']] },
 ];
 
+/** 以 upsert 为主导入演示数据，重复执行不会无限产生重复记录。 */
 async function main() {
   const databaseUrl = process.env.DATABASE_URL;
   if (!databaseUrl) throw new Error('缺少 DATABASE_URL');
   const prisma = new PrismaClient({ adapter: new PrismaMariaDb(databaseUrl) });
 
   try {
+    // 清理早期版本使用 DEMO- 前缀创建的旧公司，保留用户自行录入的数据。
     const removed = await prisma.company.deleteMany({ where: { stockCode: { startsWith: 'DEMO-' } } });
     const sectorIds = new Map<string, number>();
     for (const group of sectorGroups) {
@@ -94,6 +97,7 @@ async function main() {
       await prisma.industryChainEdge.createMany({ data: chainSeed.edges.map(([source, target, label]) => ({ chainId: chain.id, sourceNodeId: nodeIds[Number(source)], targetNodeId: nodeIds[Number(target)], label: String(label) })) });
     }
 
+    // 每家公司生成两类公告，并按序错开日期以便演示列表筛选。
     const announcementSeeds = companies.flatMap((company, index) => [
       { company, title: `${company.shortName}关于主营业务进展的自愿性披露公告`, category: '经营动态', dayOffset: index * 2 },
       { company, title: `${company.shortName}投资者关系活动记录表`, category: '投资者关系', dayOffset: index * 2 + 1 },

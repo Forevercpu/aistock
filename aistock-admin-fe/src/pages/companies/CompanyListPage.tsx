@@ -14,6 +14,7 @@ const statusMeta: Record<PublishStatus, { label: string; color: string }> = {
   ARCHIVED: { label: '已归档', color: 'orange' },
 };
 
+/** 上市公司分页列表，提供筛选、状态切换和编辑入口。 */
 export function CompanyListPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -44,6 +45,7 @@ export function CompanyListPage() {
     { title: '操作', key: 'actions', fixed: 'right', width: 150, render: (_, record) => <Space><Button type="text" icon={<EyeOutlined />} onClick={() => navigate(`/companies/${record.id}`)}>详情</Button><Button type="text" icon={<EditOutlined />} onClick={() => { setEditingCompany(record); setDrawerOpen(true); }}>编辑</Button></Space> },
   ];
 
+  /** 使当前公司列表查询失效并重新获取数据。 */
   const refresh = () => {
     void queryClient.invalidateQueries({ queryKey: ['companies'] });
     void queryClient.invalidateQueries({ queryKey: ['dashboard-overview'] });

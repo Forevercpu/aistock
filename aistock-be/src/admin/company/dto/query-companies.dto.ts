@@ -1,6 +1,7 @@
 import { Type } from 'class-transformer';
 import { IsIn, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 
+/** 公司列表分页与筛选条件。 */
 export class QueryCompaniesDto {
   @Type(() => Number)
   @IsInt()

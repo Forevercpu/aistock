@@ -7,6 +7,7 @@ import { AdminLayout } from './layouts/AdminLayout';
 import { LoginPage } from './pages/LoginPage';
 import { useAuthStore } from './store/auth';
 
+// 业务页面按路由懒加载，避免登录页一次性下载图表和流程图依赖。
 const DashboardPage = lazy(() => import('./pages/DashboardPage').then((module) => ({ default: module.DashboardPage })));
 const CompanyListPage = lazy(() => import('./pages/companies/CompanyListPage').then((module) => ({ default: module.CompanyListPage })));
 const CompanyDetailPage = lazy(() => import('./pages/companies/CompanyDetailPage').then((module) => ({ default: module.CompanyDetailPage })));
@@ -21,6 +22,7 @@ const SystemPage = lazy(() => import('./pages/system/SystemPage').then((module) 
 export default function App() {
   const accessToken = useAuthStore((state) => state.accessToken);
   const setUser = useAuthStore((state) => state.setUser);
+  // 有本地 Token 时向后端复核会话，同时刷新管理员资料。
   const { data: currentAdmin, isLoading: isCheckingAuth } = useQuery({
     queryKey: ['admin-auth-me'],
     queryFn: getCurrentAdmin,

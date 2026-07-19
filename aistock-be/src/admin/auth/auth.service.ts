@@ -17,6 +17,7 @@ export class AdminAuthService {
     private readonly audit: AuditService,
   ) {}
 
+  /** 校验管理员账号密码并签发单 JWT 访问令牌。 */
   async login(loginDto: LoginDto) {
     const admin = await this.prisma.adminUser.findUnique({
       where: { username: loginDto.username },
@@ -46,6 +47,7 @@ export class AdminAuthService {
     };
   }
 
+  /** 根据令牌中的管理员编号读取当前有效账号。 */
   async getCurrentAdmin(adminId: number): Promise<CurrentAdmin> {
     const admin = await this.prisma.adminUser.findFirst({
       where: { id: adminId, enabled: true },
@@ -59,12 +61,14 @@ export class AdminAuthService {
     return admin;
   }
 
+  /** 修改当前管理员的展示名称并写入审计日志。 */
   async updateProfile(adminId: number, dto: UpdateProfileDto) {
     const admin = await this.prisma.adminUser.update({ where: { id: adminId }, data: { displayName: dto.displayName.trim() }, select: { id: true, username: true, displayName: true, role: true } });
     await this.audit.log(adminId, 'system', 'profile', '更新管理员显示名称', 'AdminUser', adminId);
     return admin;
   }
 
+  /** 校验原密码后更新密码哈希；修改成功后要求前端重新登录。 */
   async changePassword(adminId: number, dto: ChangePasswordDto) {
     const admin = await this.prisma.adminUser.findUnique({ where: { id: adminId } });
     if (!admin || !await compare(dto.currentPassword, admin.passwordHash)) throw new UnauthorizedException('当前密码不正确');

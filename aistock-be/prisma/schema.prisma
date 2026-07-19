@@ -8,18 +8,21 @@ datasource db {
   provider = "mysql"
 }
 
+/// 后台内容统一发布状态。
 enum PublishStatus {
   DRAFT
   PUBLISHED
   ARCHIVED
 }
 
+/// AI 解析结果的人工审核状态。
 enum ReviewStatus {
   PENDING
   APPROVED
   REJECTED
 }
 
+/// 数据解析或同步任务的执行状态。
 enum SyncStatus {
   PENDING
   RUNNING
@@ -27,6 +30,7 @@ enum SyncStatus {
   FAILED
 }
 
+/// 管理后台登录账号。
 model AdminUser {
   id           Int      @id @default(autoincrement())
   username     String   @unique @db.VarChar(50)
@@ -41,6 +45,7 @@ model AdminUser {
   @@map("admin_users")
 }
 
+/// 上市公司知识库主体。
 model Company {
   id             Int            @id @default(autoincrement())
   stockCode      String         @unique @map("stock_code") @db.VarChar(10)
@@ -64,6 +69,7 @@ model Company {
   @@map("companies")
 }
 
+/// 可分层的行业板块、概念、地域或指数分类。
 model Sector {
   id        Int             @id @default(autoincrement())
   name      String          @unique @db.VarChar(80)
@@ -78,6 +84,7 @@ model Sector {
   @@map("sectors")
 }
 
+/// 公司与板块的多对多关系。
 model CompanySector {
   companyId Int     @map("company_id")
   sectorId  Int     @map("sector_id")
@@ -87,6 +94,7 @@ model CompanySector {
   @@map("company_sectors")
 }
 
+/// 可复用的公司知识标签。
 model Tag {
   id        Int          @id @default(autoincrement())
   name      String       @unique @db.VarChar(50)
@@ -95,6 +103,7 @@ model Tag {
   @@map("tags")
 }
 
+/// 公司与标签的多对多关系。
 model CompanyTag {
   companyId Int     @map("company_id")
   tagId     Int     @map("tag_id")
@@ -104,6 +113,7 @@ model CompanyTag {
   @@map("company_tags")
 }
 
+/// 公司主营产品及其营收占比。
 model Product {
   id          Int      @id @default(autoincrement())
   companyId   Int      @map("company_id")
@@ -116,6 +126,7 @@ model Product {
   @@map("products")
 }
 
+/// 上市公司公告原文与处理状态。
 model Announcement {
   id             Int          @id @default(autoincrement())
   companyId      Int          @map("company_id")
@@ -136,6 +147,7 @@ model Announcement {
   @@map("announcements")
 }
 
+/// 产业链基础信息和图谱汇总。
 model IndustryChain {
   id          Int      @id @default(autoincrement())
   name        String   @unique @db.VarChar(100)
@@ -150,6 +162,7 @@ model IndustryChain {
   @@map("industry_chains")
 }
 
+/// 产业链画布中的业务节点。
 model IndustryChainNode {
   id          Int      @id @default(autoincrement())
   chainId     Int      @map("chain_id")
@@ -169,6 +182,7 @@ model IndustryChainNode {
   @@map("industry_chain_nodes")
 }
 
+/// 产业链节点之间的有向关系。
 model IndustryChainEdge {
   id           Int      @id @default(autoincrement())
   chainId      Int      @map("chain_id")
@@ -185,6 +199,7 @@ model IndustryChainEdge {
   @@map("industry_chain_edges")
 }
 
+/// 图谱节点与上市公司的多对多关系。
 model IndustryChainNodeCompany {
   nodeId    Int @map("node_id")
   companyId Int @map("company_id")
@@ -194,6 +209,7 @@ model IndustryChainNodeCompany {
   @@map("industry_chain_node_companies")
 }
 
+/// 公告的 AI 原始解析、人工修订和审核记录。
 model AiParseResult {
   id             Int          @id @default(autoincrement())
   announcementId Int          @map("announcement_id")
@@ -213,6 +229,7 @@ model AiParseResult {
   @@map("ai_parse_results")
 }
 
+/// 用户端知识挑战题目。
 model QuizQuestion {
   id            Int           @id @default(autoincrement())
   type          String        @db.VarChar(30)
@@ -235,6 +252,7 @@ model QuizQuestion {
   @@map("quiz_questions")
 }
 
+/// 外部数据同步或批处理任务。
 model SyncTask {
   id          Int        @id @default(autoincrement())
   name        String     @db.VarChar(100)
@@ -249,6 +267,7 @@ model SyncTask {
   @@map("sync_tasks")
 }
 
+/// 管理员关键数据变更的审计记录。
 model AuditLog {
   id         Int       @id @default(autoincrement())
   adminId    Int?      @map("admin_id")

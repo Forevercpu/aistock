@@ -26,4 +26,5 @@ import { AdminSystemModule } from './admin/system/system.module';
     AdminSystemModule,
   ],
 })
+/** 后端根模块，集中装配数据库、鉴权和各管理业务模块。 */
 export class AppModule {}

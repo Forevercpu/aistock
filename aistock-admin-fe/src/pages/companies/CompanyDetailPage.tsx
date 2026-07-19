@@ -14,8 +14,10 @@ const statusMeta: Record<PublishStatus, { label: string; color: string }> = {
   ARCHIVED: { label: '已归档', color: 'orange' },
 };
 
+/** 展示公司完整资料，并在同页维护主营产品。 */
 export function CompanyDetailPage() {
   const { id } = useParams();
+  // 路由参数统一转换为后端使用的数字主键。
   const companyId = Number(id);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -25,6 +27,7 @@ export function CompanyDetailPage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [productForm] = Form.useForm<ProductInput>();
   const { data: company, isLoading, isError } = useQuery({ queryKey: ['company', companyId], queryFn: () => getCompany(companyId), enabled: Number.isInteger(companyId) });
+  /** 刷新当前公司的详情缓存。 */
   const refresh = () => {
     void queryClient.invalidateQueries({ queryKey: ['company', companyId] });
     void queryClient.invalidateQueries({ queryKey: ['companies'] });
@@ -50,6 +53,7 @@ export function CompanyDetailPage() {
   if (isLoading) return <div className="page-loading"><Spin size="large" /></div>;
   if (isError || !company) return <Card className="module-card"><Empty description="公司不存在或加载失败"><Button onClick={() => navigate('/companies')}>返回公司列表</Button></Empty></Card>;
 
+  /** 清空产品表单并进入新增模式。 */
   const openNewProduct = () => { setEditingProduct(null); productForm.resetFields(); setProductModalOpen(true); };
 
   return (

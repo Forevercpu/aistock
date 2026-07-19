@@ -6,11 +6,14 @@ import { Chart } from '../components/Chart';
 
 const statusNames: Record<string, string> = { DRAFT: '草稿', PUBLISHED: '已发布', ARCHIVED: '已归档', PENDING: '待审核', APPROVED: '已通过', REJECTED: '已驳回' };
 
+/** 展示知识库核心指标、数据完整度和运营趋势。 */
 export function DashboardPage() {
   const { data, isError } = useQuery({ queryKey: ['dashboard-overview'], queryFn: getDashboardOverview });
+  // 将接口指标转换成顶部统计卡片的统一配置。
   const stats = [
     ['上市公司', data?.companies ?? 0, '家', '#56d6ff'], ['板块与概念', data?.sectors ?? 0, '个', '#8f7cff'], ['产业链', data?.chains ?? 0, '条', '#58e7ac'], ['公告文档', data?.announcements ?? 0, '份', '#ffbd59'], ['待审核内容', data?.pendingReviews ?? 0, '条', '#ff7f8e'], ['已发布题目', data?.quizzes ?? 0, '题', '#74a7ff'],
   ];
+  // 图表配置依赖接口数据，使用 useMemo 避免普通重渲染时重复创建对象。
   const pieOption = useMemo(() => ({ tooltip: { trigger: 'item' }, legend: { bottom: 0, textStyle: { color: '#7892a4' } }, series: [{ type: 'pie', radius: ['42%', '68%'], data: data?.companyStatuses.map((item) => ({ ...item, name: statusNames[item.name] || item.name })) || [], label: { color: '#a7bdca' } }] }), [data]);
   const barOption = useMemo(() => ({ grid: { left: 40, right: 20, top: 20, bottom: 55 }, xAxis: { type: 'category', data: data?.sectorRanking.map((item) => item.name) || [], axisLabel: { color: '#7892a4', rotate: 25 }, axisLine: { lineStyle: { color: '#294052' } } }, yAxis: { type: 'value', axisLabel: { color: '#7892a4' }, splitLine: { lineStyle: { color: 'rgba(126,194,216,.08)' } } }, series: [{ type: 'bar', data: data?.sectorRanking.map((item) => item.value) || [], itemStyle: { color: '#56d6ff', borderRadius: [5, 5, 0, 0] } }] }), [data]);
   const lineOption = useMemo(() => ({ grid: { left: 42, right: 20, top: 25, bottom: 35 }, xAxis: { type: 'category', data: data?.activityTrend.map((item) => item.date.slice(5)) || [], axisLabel: { color: '#7892a4' }, axisLine: { lineStyle: { color: '#294052' } } }, yAxis: { type: 'value', axisLabel: { color: '#7892a4' }, splitLine: { lineStyle: { color: 'rgba(126,194,216,.08)' } } }, series: [{ type: 'line', smooth: true, areaStyle: { color: 'rgba(86,214,255,.12)' }, lineStyle: { color: '#56d6ff' }, data: data?.activityTrend.map((item) => item.value) || [] }] }), [data]);
