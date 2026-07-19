@@ -17,3 +17,23 @@ body { margin: 0; min-width: 320px; background: #07111f; }
 .connection-tip { margin:14px 0 -2px; padding:9px 13px; color:#d8ad62; background:rgba(255,189,89,.07); border:1px solid rgba(255,189,89,.16); border-radius:8px; font-size:12px; }.stat-row { margin-top:16px; margin-bottom:16px; }.stat-card,.panel-card,.empty-module { border-color:rgba(126,194,216,.12) !important; background:rgba(11,27,44,.72) !important; box-shadow:0 16px 45px rgba(0,0,0,.12); }.stat-card { overflow:hidden; }.stat-card:before { content:""; position:absolute; inset:0 auto 0 0; width:2px; background:var(--accent); box-shadow:0 0 18px var(--accent); }.stat-card .ant-statistic-title { color:#7790a3; }.stat-card .ant-statistic-content { color:#e8fbff; }.stat-card .ant-statistic-content-suffix { color:#587082; font-size:13px; margin-left:7px; }.stat-line { height:2px; width:36px; margin-top:17px; background:var(--accent); opacity:.65; }
 .panel-card .ant-card-head { border-color:rgba(126,194,216,.1); }.panel-card .ant-table,.panel-card .ant-table-cell { background:transparent !important; }.panel-card .ant-table-thead .ant-table-cell { color:#6f899e; font-size:12px; }.panel-card .ant-table-tbody .ant-table-row:last-child td { border-bottom:0; }.completeness>div>.ant-card-body { display:flex; flex-direction:column; gap:23px; }.quality-note { margin-top:3px; padding:13px; color:#71899c; border:1px solid rgba(126,194,216,.1); border-radius:9px; background:rgba(86,214,255,.035); font-size:12px; }.quality-note svg { margin-right:8px; color:#56d6ff; }.empty-module { min-height:100%; display:grid; place-content:center; text-align:center; }.module-icon { font-size:42px; color:#56d6ff; }.empty-module h3 { margin:16px 0 8px !important; }
 @media (max-width: 760px) { .login-panel { padding:30px 24px 26px; }.content { padding:16px; }.topbar { padding:0 14px; }.admin-name,.topbar .ant-typography-secondary { display:none; }.hero-panel { padding:28px 22px; }.hero-orbit { display:none; }.hero-panel h1 { font-size:22px !important; } }
+
+.module-card { border-color:rgba(126,194,216,.12) !important; background:rgba(11,27,44,.72) !important; box-shadow:0 16px 45px rgba(0,0,0,.12); }
+.module-toolbar { margin-bottom:20px; }
+.company-name strong,.company-name span { display:block; }
+.company-name strong { color:#e1f7ff; }
+.company-name span { margin-top:4px; color:#647d91; font-size:11px; }
+.muted-text { color:#647d91; }
+.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.page-loading { min-height:360px; display:grid; place-items:center; }
+.detail-header { margin-bottom:16px; }
+.detail-header h3 { margin:0 0 4px !important; color:#e6f8ff !important; }
+.detail-card { margin-bottom:16px; }
+.relation-row { display:flex; align-items:flex-start; gap:22px; min-height:42px; padding:8px 0; }
+.relation-row>span:first-child { width:72px; flex:0 0 72px; color:#7892a4; }
+.relation-tip { margin:10px 0 0 !important; padding-top:14px; border-top:1px solid rgba(126,194,216,.1); }
+
+@media (max-width: 760px) {
+  .form-grid { grid-template-columns:1fr; gap:0; }
+  .detail-header { align-items:flex-start !important; }
+}
