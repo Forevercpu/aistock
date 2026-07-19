@@ -22,8 +22,36 @@ body { margin: 0; min-width: 320px; background: #07111f; }
 @media (max-width: 760px) { .login-panel { padding:30px 24px 26px; }.content { padding:16px; }.topbar { padding:0 14px; }.admin-name,.topbar .ant-typography-secondary { display:none; }.hero-panel { padding:28px 22px; }.hero-orbit { display:none; }.hero-panel h1 { font-size:22px !important; } }
 
 /* 业务列表、表单和详情页共用样式。 */
-.module-card { border-color:rgba(126,194,216,.12) !important; background:rgba(11,27,44,.72) !important; box-shadow:0 16px 45px rgba(0,0,0,.12); }
-.module-toolbar { margin-bottom:20px; }
+.module-card { overflow:hidden; border-color:rgba(111,177,201,.14) !important; background:linear-gradient(145deg,rgba(10,24,39,.96),rgba(7,19,32,.96)) !important; box-shadow:0 18px 55px rgba(0,0,0,.18); }
+.module-card>.ant-card-head { min-height:62px; padding-inline:24px; border-bottom:1px solid rgba(111,177,201,.1); background:linear-gradient(90deg,rgba(15,39,57,.58),rgba(9,24,39,.22)); }
+.module-card>.ant-card-head .ant-card-head-title { color:#e4f7fb; font-size:16px; letter-spacing:.2px; }
+.module-card>.ant-card-body { padding:22px 24px 24px; }
+.module-card>.ant-card-head .ant-btn-primary { height:34px; padding-inline:16px; border:0; color:#06202b; font-weight:650; background:linear-gradient(100deg,#55cef2,#69ddc7); box-shadow:0 8px 22px rgba(73,194,221,.16); }
+.module-toolbar { width:100%; margin-bottom:18px; padding:12px; border:1px solid rgba(111,177,201,.1); border-radius:11px; background:rgba(3,13,23,.34); }
+
+/* 业务表格使用中性的深色层次，避免大面积高饱和蓝色。 */
+.module-card .ant-table-wrapper { overflow:hidden; border:1px solid rgba(111,177,201,.12); border-radius:12px; background:#081522; }
+.module-card .ant-table { color:#a9bec9; background:transparent !important; }
+.module-card .ant-table-container { overflow:hidden; border-radius:11px; }
+.module-card .ant-table-thead>tr>th { height:50px; padding:13px 16px; color:#91aab7 !important; font-size:12px; font-weight:600; letter-spacing:.3px; border-bottom:1px solid rgba(86,214,255,.13) !important; background:linear-gradient(180deg,#10283b,#0d2234) !important; }
+.module-card .ant-table-thead>tr>th:before { background-color:rgba(120,181,203,.13) !important; }
+.module-card .ant-table-tbody>tr>td { height:58px; padding:13px 16px; color:#a9bec9; border-bottom:1px solid rgba(111,177,201,.075) !important; background:rgba(8,21,34,.92) !important; transition:background .18s ease,color .18s ease; }
+.module-card .ant-table-tbody>tr:nth-child(even)>td { background:rgba(10,25,40,.92) !important; }
+.module-card .ant-table-tbody>tr:hover>td { color:#d8edf3; background:rgba(17,43,61,.94) !important; }
+.module-card .ant-table-tbody>tr:last-child>td { border-bottom:0 !important; }
+.module-card .ant-table-cell strong { color:#dff6fb; font-weight:650; }
+.module-card .ant-table-cell .ant-btn-text { height:30px; padding-inline:9px; color:#86a8b8; border-radius:7px; }
+.module-card .ant-table-cell .ant-btn-text:hover { color:#bdefff !important; background:rgba(86,214,255,.09) !important; }
+.module-card .ant-table-cell .ant-btn-text.ant-btn-dangerous { color:#c77f85; }
+.module-card .ant-table-cell .ant-btn-text.ant-btn-dangerous:hover { color:#ffadb2 !important; background:rgba(255,91,103,.08) !important; }
+.module-card .ant-table-placeholder>td { height:300px !important; background:radial-gradient(circle at center,rgba(35,78,99,.16),rgba(6,18,30,.96) 58%) !important; }
+.module-card .ant-empty-normal { margin-block:54px; }
+.module-card .ant-empty-image { height:48px; opacity:.52; filter:saturate(.55); }
+.module-card .ant-empty-description { color:#617c8b; font-size:12px; }
+.module-card .ant-pagination { margin:18px 4px 0 !important; }
+.module-card .ant-pagination .ant-pagination-item,.module-card .ant-pagination .ant-pagination-prev button,.module-card .ant-pagination .ant-pagination-next button { border-color:rgba(111,177,201,.12); background:rgba(5,17,29,.7); }
+.module-card .ant-pagination .ant-pagination-item-active { border-color:rgba(86,214,255,.5); background:rgba(86,214,255,.1); }
+.module-card .ant-table-body { scrollbar-color:#29495b #091724; scrollbar-width:thin; }
 .company-name strong,.company-name span { display:block; }
 .company-name strong { color:#e1f7ff; }
 .company-name span { margin-top:4px; color:#647d91; font-size:11px; }
