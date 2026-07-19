@@ -12,7 +12,6 @@
     "db:generate": "pnpm --filter aistock-be db:generate",
     "db:migrate": "pnpm --filter aistock-be db:migrate",
     "db:deploy": "pnpm --filter aistock-be db:deploy",
-    "db:seed-admin": "pnpm --filter aistock-be db:seed-admin",
-    "db:seed-demo": "pnpm --filter aistock-be db:seed-demo"
+    "db:seed": "pnpm --filter aistock-be db:seed"
   }
 }

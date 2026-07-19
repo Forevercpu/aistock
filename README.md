@@ -10,6 +10,8 @@
 
 本仓库使用 pnpm workspace 管理三个项目。除非特别说明，下面的命令都在仓库根目录（能看到 `pnpm-workspace.yaml` 的目录）执行，不需要进入三个子项目。
 
+当前管理后台已经接入数据总览、上市公司、板块与概念、标签、产业链图谱、公告文档、AI 解析审核、题库和系统管理。产业链使用 React Flow 编辑，统计图表使用 ECharts；所有管理接口均位于 `/api/admin/*` 并要求管理员 JWT。
+
 ## 环境要求
 
 - Node.js 22 或更高版本
@@ -72,37 +74,27 @@ pnpm db:migrate
 pnpm db:deploy
 ```
 
-### 6. 初始化管理员账号
-
-先在 `aistock-be/.env` 中设置管理员初始密码：
-
-```env
-JWT_SECRET="至少32位的随机字符串"
-JWT_EXPIRES_IN="7d"
-ADMIN_INITIAL_USERNAME="admin"
-ADMIN_INITIAL_PASSWORD="你的管理员密码"
-ADMIN_INITIAL_DISPLAY_NAME="管理员"
-```
-
-然后在仓库根目录执行：
+已经运行过旧版本并连接现有数据库时，拉取本次后台模块更新后按以下顺序执行：
 
 ```bash
-pnpm db:seed-admin
+pnpm db:generate
+pnpm db:deploy
+pnpm db:seed
 ```
 
-该命令会创建用户名为 `admin` 的管理员；如果账号已经存在，则更新密码和显示名称。请勿把真实密码或 JWT 密钥提交到 GitHub。
+`db:deploy` 只执行仓库中已经提交的迁移，不会重置数据库。
 
-### 7. 初始化开发演示数据（可选）
+### 6. 一键导入开发演示数据（可选）
 
-需要快速查看公司列表、筛选、分页、详情和主营产品效果时，在仓库根目录执行：
+当前数据库已经存在管理员账号，项目不再保留管理员初始化脚本。需要填充完整后台演示内容时，在仓库根目录执行：
 
 ```bash
-pnpm db:seed-demo
+pnpm db:seed
 ```
 
-该命令会写入 12 家使用 `DEMO-xxx` 股票代码的虚构公司，并补充演示板块、标签和主营产品。脚本使用固定标识重复更新演示记录，多次执行不会不断产生重复公司，也不会清空数据库中的现有数据。
+该命令会导入公司、板块、标签、产业链、公告、AI 审核结果、题库、同步任务和操作日志。脚本会清理股票代码以 `DEMO-` 开头的旧演示公司，但不会删除现有管理员，也不会删除其他非演示数据。
 
-演示数据不会随项目启动自动写入，也不会与管理员初始化命令绑定。连接正式数据库时，请确认确实需要这些演示记录后再手动执行。
+脚本可以重复执行，不会随项目启动自动运行，也不会修改管理员密码。连接正式数据库时，请确认确实需要演示内容后再执行。
 
 ## 启动项目
 
@@ -160,9 +152,6 @@ DATABASE_URL="mysql://aistock:aistock@localhost:3306/aistock"
 CORS_ORIGINS="http://localhost:3718,http://localhost:3719"
 JWT_SECRET="请替换为至少32位的随机字符串"
 JWT_EXPIRES_IN="7d"
-ADMIN_INITIAL_USERNAME="admin"
-ADMIN_INITIAL_PASSWORD="请设置管理员初始密码"
-ADMIN_INITIAL_DISPLAY_NAME="管理员"
 ```
 
 当前后端和 Prisma 只读取完整的 `DATABASE_URL`，不读取 `DATABASE_USER`、`DATABASE_PASSWORD`、`DATABASE_HOST` 等拆分变量，因此不需要重复配置。
@@ -194,5 +183,4 @@ DATABASE_URL="mysql://aistock_user:your_password@rm-xxxxxxxx.mysql.rds.aliyuncs.
 | `pnpm db:generate` | 生成 Prisma Client |
 | `pnpm db:migrate` | 本地开发环境创建迁移并更新数据库 |
 | `pnpm db:deploy` | 生产环境执行已经提交的迁移 |
-| `pnpm db:seed-admin` | 创建或重置管理员 `admin` 的密码 |
-| `pnpm db:seed-demo` | 创建或更新开发演示数据 |
+| `pnpm db:seed` | 一键创建或更新完整开发演示数据 |

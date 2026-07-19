@@ -20,7 +20,15 @@ export interface DashboardOverview {
   sectors: number;
   announcements: number;
   pendingReviews: number;
+  chains: number;
+  quizzes: number;
   databaseConnected: boolean;
+  companyStatuses: Array<{ name: string; value: number }>;
+  reviewStatuses: Array<{ name: string; value: number }>;
+  sectorRanking: Array<{ name: string; value: number }>;
+  completeness: { products: number; relations: number; aiReviews: number };
+  recentLogs: Array<{ id: number; module: string; action: string; summary: string; createdAt: string; admin?: { displayName: string } | null }>;
+  activityTrend: Array<{ date: string; value: number }>;
 }
 
 export const api = axios.create({

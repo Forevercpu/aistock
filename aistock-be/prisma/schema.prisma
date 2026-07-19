@@ -36,6 +36,8 @@ model AdminUser {
   enabled      Boolean  @default(true)
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
+  reviewedAiResults AiParseResult[]
+  auditLogs     AuditLog[]
   @@map("admin_users")
 }
 
@@ -56,6 +58,8 @@ model Company {
   tags           CompanyTag[]
   products       Product[]
   announcements Announcement[]
+  chainNodes    IndustryChainNodeCompany[]
+  quizQuestions QuizQuestion[]
   @@index([name])
   @@map("companies")
 }
@@ -66,7 +70,11 @@ model Sector {
   type      String          @default("industry") @db.VarChar(30)
   parentId  Int?            @map("parent_id")
   createdAt DateTime        @default(now()) @map("created_at")
+  updatedAt DateTime        @updatedAt @map("updated_at")
+  parent    Sector?          @relation("SectorTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children  Sector[]         @relation("SectorTree")
   companies CompanySector[]
+  @@index([parentId])
   @@map("sectors")
 }
 
@@ -113,10 +121,16 @@ model Announcement {
   companyId      Int          @map("company_id")
   title          String       @db.VarChar(255)
   sourceUrl      String?      @map("source_url") @db.VarChar(1000)
+  sourceName     String?      @map("source_name") @db.VarChar(100)
+  category       String?      @db.VarChar(50)
+  content        String?      @db.LongText
   publishedAt    DateTime     @map("published_at")
   aiSummary      String?      @map("ai_summary") @db.Text
+  parseStatus    SyncStatus   @default(PENDING) @map("parse_status")
   reviewStatus   ReviewStatus @default(PENDING) @map("review_status")
+  lastParsedAt   DateTime?    @map("last_parsed_at")
   company        Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  aiResults      AiParseResult[]
   createdAt      DateTime     @default(now()) @map("created_at")
   @@index([companyId, publishedAt])
   @@map("announcements")
@@ -127,9 +141,76 @@ model IndustryChain {
   name        String   @unique @db.VarChar(100)
   description String?  @db.Text
   graphData   Json?    @map("graph_data")
+  status      PublishStatus @default(DRAFT)
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
+  nodes       IndustryChainNode[]
+  edges       IndustryChainEdge[]
+  quizQuestions QuizQuestion[]
   @@map("industry_chains")
+}
+
+model IndustryChainNode {
+  id          Int      @id @default(autoincrement())
+  chainId     Int      @map("chain_id")
+  name        String   @db.VarChar(100)
+  type        String   @default("stage") @db.VarChar(30)
+  stage       String   @default("midstream") @db.VarChar(30)
+  description String?  @db.Text
+  positionX   Float    @default(0) @map("position_x")
+  positionY   Float    @default(0) @map("position_y")
+  chain       IndustryChain @relation(fields: [chainId], references: [id], onDelete: Cascade)
+  sourceEdges IndustryChainEdge[] @relation("SourceNode")
+  targetEdges IndustryChainEdge[] @relation("TargetNode")
+  companies   IndustryChainNodeCompany[]
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  @@index([chainId])
+  @@map("industry_chain_nodes")
+}
+
+model IndustryChainEdge {
+  id           Int      @id @default(autoincrement())
+  chainId      Int      @map("chain_id")
+  sourceNodeId Int      @map("source_node_id")
+  targetNodeId Int      @map("target_node_id")
+  label        String?  @db.VarChar(100)
+  chain        IndustryChain @relation(fields: [chainId], references: [id], onDelete: Cascade)
+  sourceNode   IndustryChainNode @relation("SourceNode", fields: [sourceNodeId], references: [id], onDelete: Cascade)
+  targetNode   IndustryChainNode @relation("TargetNode", fields: [targetNodeId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now()) @map("created_at")
+  @@index([chainId])
+  @@index([sourceNodeId])
+  @@index([targetNodeId])
+  @@map("industry_chain_edges")
+}
+
+model IndustryChainNodeCompany {
+  nodeId    Int @map("node_id")
+  companyId Int @map("company_id")
+  node      IndustryChainNode @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  @@id([nodeId, companyId])
+  @@map("industry_chain_node_companies")
+}
+
+model AiParseResult {
+  id             Int          @id @default(autoincrement())
+  announcementId Int          @map("announcement_id")
+  rawResult      Json         @map("raw_result")
+  editedResult   Json?        @map("edited_result")
+  modelName      String       @default("mock-provider") @map("model_name") @db.VarChar(80)
+  status         ReviewStatus @default(PENDING)
+  reviewerId     Int?         @map("reviewer_id")
+  reviewedAt     DateTime?    @map("reviewed_at")
+  failureReason  String?      @map("failure_reason") @db.Text
+  announcement   Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  reviewer       AdminUser?   @relation(fields: [reviewerId], references: [id], onDelete: SetNull)
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+  @@index([announcementId])
+  @@index([status])
+  @@map("ai_parse_results")
 }
 
 model QuizQuestion {
@@ -139,9 +220,18 @@ model QuizQuestion {
   options       Json?
   answer        String        @db.Text
   explanation   String?       @db.Text
+  difficulty    String        @default("medium") @db.VarChar(20)
+  score         Int           @default(10)
+  weight        Int           @default(0)
+  companyId     Int?          @map("company_id")
+  chainId       Int?          @map("chain_id")
   status        PublishStatus @default(DRAFT)
+  company       Company?      @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  chain         IndustryChain? @relation(fields: [chainId], references: [id], onDelete: SetNull)
   createdAt     DateTime      @default(now()) @map("created_at")
   updatedAt     DateTime      @updatedAt @map("updated_at")
+  @@index([companyId])
+  @@index([chainId])
   @@map("quiz_questions")
 }
 
@@ -152,7 +242,25 @@ model SyncTask {
   status      SyncStatus @default(PENDING)
   lastRunAt   DateTime?  @map("last_run_at")
   errorMessage String?   @map("error_message") @db.Text
+  lastResult  Json?      @map("last_result")
+  runCount    Int        @default(0) @map("run_count")
   createdAt   DateTime   @default(now()) @map("created_at")
   updatedAt   DateTime   @updatedAt @map("updated_at")
   @@map("sync_tasks")
+}
+
+model AuditLog {
+  id         Int       @id @default(autoincrement())
+  adminId    Int?      @map("admin_id")
+  module     String    @db.VarChar(50)
+  action     String    @db.VarChar(50)
+  targetType String?   @map("target_type") @db.VarChar(50)
+  targetId   String?   @map("target_id") @db.VarChar(50)
+  summary    String    @db.VarChar(500)
+  metadata   Json?
+  admin      AdminUser? @relation(fields: [adminId], references: [id], onDelete: SetNull)
+  createdAt  DateTime  @default(now()) @map("created_at")
+  @@index([adminId])
+  @@index([module, createdAt])
+  @@map("audit_logs")
 }

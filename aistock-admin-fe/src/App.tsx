@@ -1,15 +1,22 @@
-import { useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Spin } from 'antd';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { getCurrentAdmin } from './api';
 import { AdminLayout } from './layouts/AdminLayout';
-import { CompanyDetailPage } from './pages/companies/CompanyDetailPage';
-import { CompanyListPage } from './pages/companies/CompanyListPage';
-import { DashboardPage } from './pages/DashboardPage';
 import { LoginPage } from './pages/LoginPage';
-import { PlaceholderPage } from './pages/PlaceholderPage';
 import { useAuthStore } from './store/auth';
+
+const DashboardPage = lazy(() => import('./pages/DashboardPage').then((module) => ({ default: module.DashboardPage })));
+const CompanyListPage = lazy(() => import('./pages/companies/CompanyListPage').then((module) => ({ default: module.CompanyListPage })));
+const CompanyDetailPage = lazy(() => import('./pages/companies/CompanyDetailPage').then((module) => ({ default: module.CompanyDetailPage })));
+const CatalogPage = lazy(() => import('./pages/catalog/CatalogPage').then((module) => ({ default: module.CatalogPage })));
+const ChainListPage = lazy(() => import('./pages/chains/ChainListPage').then((module) => ({ default: module.ChainListPage })));
+const ChainEditorPage = lazy(() => import('./pages/chains/ChainEditorPage').then((module) => ({ default: module.ChainEditorPage })));
+const AnnouncementPage = lazy(() => import('./pages/content/AnnouncementPage').then((module) => ({ default: module.AnnouncementPage })));
+const AiReviewPage = lazy(() => import('./pages/content/AiReviewPage').then((module) => ({ default: module.AiReviewPage })));
+const QuizPage = lazy(() => import('./pages/content/QuizPage').then((module) => ({ default: module.QuizPage })));
+const SystemPage = lazy(() => import('./pages/system/SystemPage').then((module) => ({ default: module.SystemPage })));
 
 export default function App() {
   const accessToken = useAuthStore((state) => state.accessToken);
@@ -29,22 +36,23 @@ export default function App() {
   if (!accessToken) return <LoginPage />;
   if (isCheckingAuth) return <div className="auth-loading"><Spin size="large" /><span>正在验证登录状态</span></div>;
 
-  return (
+  return <Suspense fallback={<div className="page-loading"><Spin size="large" /></div>}>
     <Routes>
       <Route element={<AdminLayout />}>
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="companies" element={<CompanyListPage />} />
         <Route path="companies/:id" element={<CompanyDetailPage />} />
-        <Route path="sectors" element={<PlaceholderPage />} />
-        <Route path="tags" element={<PlaceholderPage />} />
-        <Route path="chains" element={<PlaceholderPage />} />
-        <Route path="announcements" element={<PlaceholderPage />} />
-        <Route path="ai-reviews" element={<PlaceholderPage />} />
-        <Route path="quizzes" element={<PlaceholderPage />} />
-        <Route path="system" element={<PlaceholderPage />} />
+        <Route path="sectors" element={<CatalogPage kind="sector" />} />
+        <Route path="tags" element={<CatalogPage kind="tag" />} />
+        <Route path="chains" element={<ChainListPage />} />
+        <Route path="chains/:id" element={<ChainEditorPage />} />
+        <Route path="announcements" element={<AnnouncementPage />} />
+        <Route path="ai-reviews" element={<AiReviewPage />} />
+        <Route path="quizzes" element={<QuizPage />} />
+        <Route path="system" element={<SystemPage />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Route>
     </Routes>
-  );
+  </Suspense>;
 }

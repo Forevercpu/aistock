@@ -6,6 +6,7 @@ import zhCN from 'antd/locale/zh_CN';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import './styles.css';
+import '@xyflow/react/dist/style.css';
 
 const queryClient = new QueryClient({
   defaultOptions: {

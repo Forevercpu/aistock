@@ -1,47 +1,18 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { TeamOutlined } from '@ant-design/icons';
-import { Button, Card, Col, Flex, Progress, Row, Statistic, Table, Tag, Typography } from 'antd';
-import type { TableProps } from 'antd';
+import { Card, Col, Flex, Progress, Row, Statistic, Table, Tag, Typography } from 'antd';
 import { getDashboardOverview } from '../api';
+import { Chart } from '../components/Chart';
 
-const activityData = [
-  { key: '1', company: '东山精密', action: '更新主营产品与 AI 算力标签', operator: '系统同步', status: '已完成', time: '10 分钟前' },
-  { key: '2', company: '光迅科技', action: '待审核 2026 半年度业绩预告', operator: 'AI 解析', status: '待审核', time: '32 分钟前' },
-  { key: '3', company: '云南锗业', action: '补充锗产业链上游关系', operator: '管理员', status: '已完成', time: '1 小时前' },
-];
-
-const columns: TableProps<(typeof activityData)[number]>['columns'] = [
-  { title: '公司', dataIndex: 'company', render: (value) => <Typography.Text strong>{value}</Typography.Text> },
-  { title: '变更内容', dataIndex: 'action' },
-  { title: '来源', dataIndex: 'operator' },
-  { title: '状态', dataIndex: 'status', render: (value) => <Tag color={value === '已完成' ? 'cyan' : 'gold'}>{value}</Tag> },
-  { title: '时间', dataIndex: 'time' },
-];
+const statusNames: Record<string, string> = { DRAFT: '草稿', PUBLISHED: '已发布', ARCHIVED: '已归档', PENDING: '待审核', APPROVED: '已通过', REJECTED: '已驳回' };
 
 export function DashboardPage() {
   const { data, isError } = useQuery({ queryKey: ['dashboard-overview'], queryFn: getDashboardOverview });
-  const stats = useMemo(() => [
-    { title: '上市公司', value: data?.companies ?? 0, suffix: '家', accent: '#56d6ff' },
-    { title: '板块与概念', value: data?.sectors ?? 0, suffix: '个', accent: '#8f7cff' },
-    { title: '公告文档', value: data?.announcements ?? 0, suffix: '份', accent: '#58e7ac' },
-    { title: '待审核内容', value: data?.pendingReviews ?? 0, suffix: '条', accent: '#ffbd59' },
-  ], [data]);
-
-  return (
-    <>
-      <div className="hero-panel">
-        <div><Tag color="cyan">SYSTEM ONLINE</Tag><Typography.Title>早上好，开始完善今天的知识图谱吧</Typography.Title><Typography.Paragraph>统一维护公司、板块、产业链和公告，让每一张公司卡牌都有可信的数据来源。</Typography.Paragraph></div>
-        <div className="hero-orbit"><span>公司</span><i /><span>产业</span></div>
-      </div>
-      {(isError || data?.databaseConnected === false) && <div className="connection-tip">后端已启动，但数据库尚未连接；统计数据暂以 0 展示。</div>}
-      <Row gutter={[16, 16]} className="stat-row">
-        {stats.map((item) => <Col xs={24} sm={12} xl={6} key={item.title}><Card className="stat-card" style={{ '--accent': item.accent } as React.CSSProperties}><Statistic title={item.title} value={item.value} suffix={item.suffix} /><div className="stat-line" /></Card></Col>)}
-      </Row>
-      <Row gutter={[16, 16]}>
-        <Col xs={24} xl={16}><Card title="最近数据变更" extra={<Button type="link">查看全部</Button>} className="panel-card"><Table columns={columns} dataSource={activityData} pagination={false} scroll={{ x: 720 }} /></Card></Col>
-        <Col xs={24} xl={8}><Card title="数据完善度" className="panel-card completeness"><div><Flex justify="space-between"><span>公司基础资料</span><strong>72%</strong></Flex><Progress percent={72} showInfo={false} strokeColor="#56d6ff" /></div><div><Flex justify="space-between"><span>产业链关系</span><strong>46%</strong></Flex><Progress percent={46} showInfo={false} strokeColor="#8f7cff" /></div><div><Flex justify="space-between"><span>公告 AI 解析</span><strong>61%</strong></Flex><Progress percent={61} showInfo={false} strokeColor="#58e7ac" /></div><div className="quality-note"><TeamOutlined /> 数据质量将直接影响用户端卡牌与题库体验</div></Card></Col>
-      </Row>
-    </>
-  );
+  const stats = [
+    ['上市公司', data?.companies ?? 0, '家', '#56d6ff'], ['板块与概念', data?.sectors ?? 0, '个', '#8f7cff'], ['产业链', data?.chains ?? 0, '条', '#58e7ac'], ['公告文档', data?.announcements ?? 0, '份', '#ffbd59'], ['待审核内容', data?.pendingReviews ?? 0, '条', '#ff7f8e'], ['已发布题目', data?.quizzes ?? 0, '题', '#74a7ff'],
+  ];
+  const pieOption = useMemo(() => ({ tooltip: { trigger: 'item' }, legend: { bottom: 0, textStyle: { color: '#7892a4' } }, series: [{ type: 'pie', radius: ['42%', '68%'], data: data?.companyStatuses.map((item) => ({ ...item, name: statusNames[item.name] || item.name })) || [], label: { color: '#a7bdca' } }] }), [data]);
+  const barOption = useMemo(() => ({ grid: { left: 40, right: 20, top: 20, bottom: 55 }, xAxis: { type: 'category', data: data?.sectorRanking.map((item) => item.name) || [], axisLabel: { color: '#7892a4', rotate: 25 }, axisLine: { lineStyle: { color: '#294052' } } }, yAxis: { type: 'value', axisLabel: { color: '#7892a4' }, splitLine: { lineStyle: { color: 'rgba(126,194,216,.08)' } } }, series: [{ type: 'bar', data: data?.sectorRanking.map((item) => item.value) || [], itemStyle: { color: '#56d6ff', borderRadius: [5, 5, 0, 0] } }] }), [data]);
+  const lineOption = useMemo(() => ({ grid: { left: 42, right: 20, top: 25, bottom: 35 }, xAxis: { type: 'category', data: data?.activityTrend.map((item) => item.date.slice(5)) || [], axisLabel: { color: '#7892a4' }, axisLine: { lineStyle: { color: '#294052' } } }, yAxis: { type: 'value', axisLabel: { color: '#7892a4' }, splitLine: { lineStyle: { color: 'rgba(126,194,216,.08)' } } }, series: [{ type: 'line', smooth: true, areaStyle: { color: 'rgba(86,214,255,.12)' }, lineStyle: { color: '#56d6ff' }, data: data?.activityTrend.map((item) => item.value) || [] }] }), [data]);
+  return <><div className="hero-panel"><div><Tag color="cyan">SYSTEM ONLINE</Tag><Typography.Title>上市公司知识库运营总览</Typography.Title><Typography.Paragraph>公司、产业链、公告、AI 审核和题库数据已统一接入后台管理。</Typography.Paragraph></div><div className="hero-orbit"><span>公司</span><i /><span>产业</span></div></div>{(isError || data?.databaseConnected === false) && <div className="connection-tip">后端已启动，但数据库尚未连接；统计数据暂以 0 展示。</div>}<Row gutter={[16, 16]} className="stat-row">{stats.map(([title, value, suffix, accent]) => <Col xs={24} sm={12} lg={8} xl={4} key={String(title)}><Card className="stat-card" style={{ '--accent': accent } as React.CSSProperties}><Statistic title={title} value={value} suffix={suffix} /><div className="stat-line" /></Card></Col>)}</Row><Row gutter={[16, 16]}><Col xs={24} xl={16}><Card title="最近 30 天数据变更" className="panel-card"><Chart option={lineOption} /></Card></Col><Col xs={24} xl={8}><Card title="公司发布状态" className="panel-card"><Chart option={pieOption} /></Card></Col><Col xs={24} xl={14}><Card title="板块公司数量" className="panel-card dashboard-row-card"><Chart option={barOption} height={300} /></Card></Col><Col xs={24} xl={10}><Card title="数据完善度" className="panel-card completeness dashboard-row-card"><div><Flex justify="space-between"><span>主营产品覆盖</span><strong>{data?.completeness.products ?? 0}%</strong></Flex><Progress percent={data?.completeness.products ?? 0} showInfo={false} strokeColor="#56d6ff" /></div><div><Flex justify="space-between"><span>板块/标签关联</span><strong>{data?.completeness.relations ?? 0}%</strong></Flex><Progress percent={data?.completeness.relations ?? 0} showInfo={false} strokeColor="#8f7cff" /></div><div><Flex justify="space-between"><span>公告 AI 审核</span><strong>{data?.completeness.aiReviews ?? 0}%</strong></Flex><Progress percent={data?.completeness.aiReviews ?? 0} showInfo={false} strokeColor="#58e7ac" /></div></Card></Col><Col span={24}><Card title="最近数据变更" className="panel-card dashboard-row-card"><Table rowKey="id" dataSource={data?.recentLogs} pagination={false} columns={[{ title: '时间', dataIndex: 'createdAt', width: 180, render: (value) => new Date(value).toLocaleString('zh-CN') }, { title: '模块', dataIndex: 'module', width: 120 }, { title: '变更内容', dataIndex: 'summary' }, { title: '操作人', dataIndex: 'admin', width: 120, render: (value) => value?.displayName || '系统' }]} /></Card></Col></Row></>;
 }

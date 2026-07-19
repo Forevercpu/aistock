@@ -7,10 +7,11 @@ import { UpdateCompanyDto } from './dto/update-company.dto';
 import { UpdateCompanyStatusDto } from './dto/update-company-status.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import type { Prisma } from '../../generated/prisma/client';
+import { AuditService } from '../audit/audit.service';
 
 @Injectable()
 export class AdminCompanyService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly audit: AuditService) {}
 
   async findAll(query: QueryCompaniesDto) {
     const keyword = query.keyword?.trim();
@@ -76,41 +77,52 @@ export class AdminCompanyService {
     };
   }
 
-  async create(dto: CreateCompanyDto) {
+  async create(dto: CreateCompanyDto, adminId: number) {
     try {
-      return await this.prisma.company.create({ data: this.toCreateData(dto) });
+      const item = await this.prisma.company.create({ data: this.toCreateData(dto) });
+      await this.audit.log(adminId, 'company', 'create', `新增公司“${item.shortName || item.name}”`, 'Company', item.id);
+      return item;
     } catch (error) {
       this.handleUniqueError(error);
     }
   }
 
-  async update(id: number, dto: UpdateCompanyDto) {
+  async update(id: number, dto: UpdateCompanyDto, adminId: number) {
     await this.ensureCompany(id);
     try {
-      return await this.prisma.company.update({ where: { id }, data: this.toUpdateData(dto) });
+      const item = await this.prisma.company.update({ where: { id }, data: this.toUpdateData(dto) });
+      await this.audit.log(adminId, 'company', 'update', `更新公司“${item.shortName || item.name}”`, 'Company', item.id);
+      return item;
     } catch (error) {
       this.handleUniqueError(error);
     }
   }
 
-  async updateStatus(id: number, dto: UpdateCompanyStatusDto) {
+  async updateStatus(id: number, dto: UpdateCompanyStatusDto, adminId: number) {
     await this.ensureCompany(id);
-    return this.prisma.company.update({ where: { id }, data: { status: dto.status } });
+    const item = await this.prisma.company.update({ where: { id }, data: { status: dto.status } });
+    await this.audit.log(adminId, 'company', 'status', `调整公司“${item.shortName || item.name}”发布状态`, 'Company', item.id);
+    return item;
   }
 
-  async createProduct(companyId: number, dto: CreateProductDto) {
+  async createProduct(companyId: number, dto: CreateProductDto, adminId: number) {
     await this.ensureCompany(companyId);
-    return this.prisma.product.create({ data: { ...dto, companyId } });
+    const item = await this.prisma.product.create({ data: { ...dto, companyId } });
+    await this.audit.log(adminId, 'company', 'product-create', `新增主营产品“${item.name}”`, 'Product', item.id);
+    return item;
   }
 
-  async updateProduct(companyId: number, productId: number, dto: UpdateProductDto) {
+  async updateProduct(companyId: number, productId: number, dto: UpdateProductDto, adminId: number) {
     await this.ensureProduct(companyId, productId);
-    return this.prisma.product.update({ where: { id: productId }, data: dto });
+    const item = await this.prisma.product.update({ where: { id: productId }, data: dto });
+    await this.audit.log(adminId, 'company', 'product-update', `更新主营产品“${item.name}”`, 'Product', item.id);
+    return item;
   }
 
-  async deleteProduct(companyId: number, productId: number) {
+  async deleteProduct(companyId: number, productId: number, adminId: number) {
     await this.ensureProduct(companyId, productId);
-    await this.prisma.product.delete({ where: { id: productId } });
+    const item = await this.prisma.product.delete({ where: { id: productId } });
+    await this.audit.log(adminId, 'company', 'product-delete', `删除主营产品“${item.name}”`, 'Product', item.id);
     return { success: true };
   }
 

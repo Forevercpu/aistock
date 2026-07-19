@@ -1,8 +1,9 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AdminAuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard, type AdminRequest } from './jwt-auth.guard';
+import { ChangePasswordDto, UpdateProfileDto } from './dto/update-profile.dto';
 
 @ApiTags('admin-auth')
 @Controller('admin/auth')
@@ -22,5 +23,18 @@ export class AdminAuthController {
   getCurrentAdmin(@Req() request: AdminRequest) {
     return this.authService.getCurrentAdmin(request.admin.sub);
   }
-}
 
+  @Patch('profile')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  updateProfile(@Req() request: AdminRequest, @Body() dto: UpdateProfileDto) {
+    return this.authService.updateProfile(request.admin.sub, dto);
+  }
+
+  @Post('change-password')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  changePassword(@Req() request: AdminRequest, @Body() dto: ChangePasswordDto) {
+    return this.authService.changePassword(request.admin.sub, dto);
+  }
+}
