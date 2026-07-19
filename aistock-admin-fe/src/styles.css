@@ -72,6 +72,8 @@ body { margin: 0; min-width: 320px; background: #07111f; }
 
 /* 分类、产业链、AI 审核和系统设置模块的专用样式。 */
 .color-input { width:72px; padding:4px; }
+.catalog-tag { display:inline-flex; align-items:center; gap:8px; min-height:27px; padding:4px 10px; color:#c9e0e8; font-size:12px; line-height:18px; border:1px solid rgba(126,194,216,.12); border-radius:7px; background:rgba(7,22,34,.82); box-shadow:inset 0 0 0 1px rgba(255,255,255,.015); }
+.catalog-tag i { width:7px; height:7px; flex:0 0 7px; border-radius:50%; box-shadow:0 0 8px currentColor; }
 .module-filter { width:150px; margin-bottom:18px; }
 .chain-editor-card>.ant-card-body { padding:0; }
 .chain-editor-subtitle { display:block; margin-top:3px; font-size:11px; }

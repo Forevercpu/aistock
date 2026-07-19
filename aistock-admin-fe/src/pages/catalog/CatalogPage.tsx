@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { DeleteOutlined, EditOutlined, LinkOutlined, PlusOutlined } from '@ant-design/icons';
-import { Button, Card, Drawer, Form, Input, Modal, Popconfirm, Select, Space, Table, Tag, message } from 'antd';
+import { Button, Card, Drawer, Form, Input, Modal, Popconfirm, Select, Space, Table, message } from 'antd';
 import axios from 'axios';
 import { deleteSector, deleteTag, getCompanyOptions, getSectors, getTags, saveSector, saveTag, setSectorCompanies, setTagCompanies } from '../../services/admin';
 import type { SectorItem, TagItem } from '../../types/admin';
@@ -37,7 +37,7 @@ export function CatalogPage({ kind }: CatalogPageProps) {
   const openRelations = (item: CatalogItem) => { setRelationItem(item); setCompanyIds(item.companies.map((company) => company.id)); };
 
   const columns = [
-    { title: isSector ? '板块名称' : '标签名称', dataIndex: 'name', render: (value: string, item: CatalogItem) => isSector ? <strong>{value}</strong> : <Tag color={(item as TagItem).color || 'cyan'}>{value}</Tag> },
+    { title: isSector ? '板块名称' : '标签名称', dataIndex: 'name', render: (value: string, item: CatalogItem) => isSector ? <strong>{value}</strong> : <span className="catalog-tag"><i style={{ backgroundColor: (item as TagItem).color || '#56d6ff', color: (item as TagItem).color || '#56d6ff' }} />{value}</span> },
     ...(isSector ? [{ title: '类型', dataIndex: 'type', width: 120, render: (value: string) => sectorTypes[value] || value }, { title: '上级分类', dataIndex: 'parent', width: 150, render: (value: SectorItem['parent']) => value?.name || '-' }, { title: '下级分类', dataIndex: 'childCount', width: 100, render: (value: number) => `${value} 个` }] : []),
     { title: '关联公司', dataIndex: 'companyCount', width: 120, render: (value: number) => `${value} 家` },
     { title: '操作', width: 260, render: (_: unknown, item: CatalogItem) => <Space><Button type="text" icon={<LinkOutlined />} onClick={() => openRelations(item)}>关联公司</Button><Button type="text" icon={<EditOutlined />} onClick={() => openEditor(item)}>编辑</Button><Popconfirm title={`确认删除“${item.name}”？`} onConfirm={() => deleteMutation.mutate(item.id)}><Button type="text" danger icon={<DeleteOutlined />}>删除</Button></Popconfirm></Space> },
