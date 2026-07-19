@@ -1,4 +1,4 @@
-import { LockOutlined, SafetyCertificateOutlined, UserOutlined } from '@ant-design/icons';
+import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { Button, Form, Input, Typography, message } from 'antd';
 import axios from 'axios';
 import { loginAdmin } from '../api';
@@ -53,9 +53,7 @@ export function LoginPage() {
           </Form.Item>
           <Button type="primary" htmlType="submit" size="large" block className="login-submit">登录</Button>
         </Form>
-        <div className="login-security"><SafetyCertificateOutlined /> 单 Token JWT 身份认证</div>
       </section>
     </main>
   );
 }
-
